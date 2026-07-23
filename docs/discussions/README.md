@@ -8,7 +8,8 @@
 
 | # | Ngày | Chủ đề | Trạng thái |
 |---|---|---|---|
-| — | — | Chưa có discussion nào | — |
+| 1 | 2026-07-23 | [Kiến trúc triển khai cho thị trường Việt Nam](2026-07-23-architecture-for-vietnam-market.md) | Đang bàn — đã chốt hướng HF Spaces |
+| 2 | 2026-07-23 | [Mô hình HF OAuth tự động — User không cần cài đặt](2026-07-23-hf-oauth-automation.md) | Đang bàn |
 
 ---
 
