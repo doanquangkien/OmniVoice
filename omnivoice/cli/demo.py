@@ -39,7 +39,7 @@ from omnivoice.utils.lang_map import LANG_NAMES, lang_display_name
 # ---------------------------------------------------------------------------
 # Language list — all 600+ supported languages
 # ---------------------------------------------------------------------------
-_ALL_LANGUAGES = ["Auto"] + sorted(lang_display_name(n) for n in LANG_NAMES)
+_ALL_LANGUAGES = ["Tự động"] + sorted(lang_display_name(n) for n in LANG_NAMES)
 
 
 # ---------------------------------------------------------------------------
@@ -48,53 +48,53 @@ _ALL_LANGUAGES = ["Auto"] + sorted(lang_display_name(n) for n in LANG_NAMES)
 # Each option is displayed as "English / 中文".
 # The model expects English for accents and Chinese for dialects.
 _CATEGORIES = {
-    "Gender / 性别": ["Male / 男", "Female / 女"],
-    "Age / 年龄": [
-        "Child / 儿童",
-        "Teenager / 少年",
-        "Young Adult / 青年",
-        "Middle-aged / 中年",
-        "Elderly / 老年",
+    "Giới tính": ["Male / Nam", "Female / Nữ"],
+    "Độ tuổi": [
+        "Child / Trẻ em",
+        "Teenager / Thiếu niên",
+        "Young Adult / Thanh niên",
+        "Middle-aged / Trung niên",
+        "Elderly / Người già",
     ],
-    "Pitch / 音调": [
-        "Very Low Pitch / 极低音调",
-        "Low Pitch / 低音调",
-        "Moderate Pitch / 中音调",
-        "High Pitch / 高音调",
-        "Very High Pitch / 极高音调",
+    "Cao độ": [
+        "Very Low Pitch / Rất trầm",
+        "Low Pitch / Trầm",
+        "Moderate Pitch / Trung bình",
+        "High Pitch / Cao",
+        "Very High Pitch / Rất cao",
     ],
-    "Style / 风格": ["Whisper / 耳语"],
-    "English Accent / 英文口音": [
-        "American Accent / 美式口音",
-        "Australian Accent / 澳大利亚口音",
-        "British Accent / 英国口音",
-        "Chinese Accent / 中国口音",
-        "Canadian Accent / 加拿大口音",
-        "Indian Accent / 印度口音",
-        "Korean Accent / 韩国口音",
-        "Portuguese Accent / 葡萄牙口音",
-        "Russian Accent / 俄罗斯口音",
-        "Japanese Accent / 日本口音",
+    "Phong cách": ["Whisper / Thì thầm"],
+    "Giọng tiếng Anh": [
+        "American Accent / Mỹ",
+        "Australian Accent / Úc",
+        "British Accent / Anh",
+        "Chinese Accent / Trung Quốc",
+        "Canadian Accent / Canada",
+        "Indian Accent / Ấn Độ",
+        "Korean Accent / Hàn Quốc",
+        "Portuguese Accent / Bồ Đào Nha",
+        "Russian Accent / Nga",
+        "Japanese Accent / Nhật Bản",
     ],
-    "Chinese Dialect / 中文方言": [
-        "Henan Dialect / 河南话",
-        "Shaanxi Dialect / 陕西话",
-        "Sichuan Dialect / 四川话",
-        "Guizhou Dialect / 贵州话",
-        "Yunnan Dialect / 云南话",
-        "Guilin Dialect / 桂林话",
-        "Jinan Dialect / 济南话",
-        "Shijiazhuang Dialect / 石家庄话",
-        "Gansu Dialect / 甘肃话",
-        "Ningxia Dialect / 宁夏话",
-        "Qingdao Dialect / 青岛话",
-        "Northeast Dialect / 东北话",
+    "Phương ngữ tiếng Trung": [
+        "Henan Dialect / Hà Nam",
+        "Shaanxi Dialect / Thiểm Tây",
+        "Sichuan Dialect / Tứ Xuyên",
+        "Guizhou Dialect / Quý Châu",
+        "Yunnan Dialect / Vân Nam",
+        "Guilin Dialect / Quế Lâm",
+        "Jinan Dialect / Tế Nam",
+        "Shijiazhuang Dialect / Thạch Gia Trang",
+        "Gansu Dialect / Cam Túc",
+        "Ningxia Dialect / Ninh Hạ",
+        "Qingdao Dialect / Thanh Đảo",
+        "Northeast Dialect / Đông Bắc",
     ],
 }
 
 _ATTR_INFO = {
-    "English Accent / 英文口音": "Only effective for English speech.",
-    "Chinese Dialect / 中文方言": "Only effective for Chinese speech.",
+    "Giọng tiếng Anh": "Chỉ áp dụng cho giọng nói tiếng Anh.",
+    "Phương ngữ tiếng Trung": "Chỉ áp dụng cho giọng nói tiếng Trung.",
 }
 
 # ---------------------------------------------------------------------------
@@ -114,7 +114,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Model checkpoint path or HuggingFace repo id.",
     )
     parser.add_argument(
-        "--device", default=None, help="Device to use. Auto-detected if not specified."
+        "--device", default=None, help="Thiết bị sử dụng. Tự động phát hiện nếu không chỉ định."
     )
     parser.add_argument("--ip", default="0.0.0.0", help="Server IP (default: 0.0.0.0).")
     parser.add_argument(
@@ -173,7 +173,7 @@ def build_demo(
         ref_text=None,
     ):
         if not text or not text.strip():
-            return None, "Please enter the text to synthesize."
+            return None, "Vui lòng nhập nội dung văn bản cần đọc.", gr.update(interactive=True)
 
         gen_config = OmniVoiceGenerationConfig(
             num_step=int(num_step or 32),
@@ -183,7 +183,7 @@ def build_demo(
             postprocess_output=bool(postprocess_output),
         )
 
-        lang = language if (language and language != "Auto") else None
+        lang = language if (language and language != "Tự động") else None
 
         kw: Dict[str, Any] = dict(
             text=text.strip(), language=lang, generation_config=gen_config
@@ -196,7 +196,7 @@ def build_demo(
 
         if mode == "clone":
             if not ref_audio:
-                return None, "Please upload a reference audio."
+                return None, "Vui lòng tải lên audio tham chiếu (giọng mẫu).", gr.update(interactive=True)
             kw["voice_clone_prompt"] = model.create_voice_clone_prompt(
                 ref_audio=ref_audio,
                 ref_text=ref_text,
@@ -208,10 +208,10 @@ def build_demo(
         try:
             audio = model.generate(**kw)
         except Exception as e:
-            return None, f"Error: {type(e).__name__}: {e}"
+            return None, f"Lỗi: {type(e).__name__}: {e}", gr.update(interactive=True)
 
         waveform = (audio[0] * 32767).astype(np.int16)
-        return (sampling_rate, waveform), "Done."
+        return (sampling_rate, waveform), "Đã xong.", gr.update(interactive=True)
 
     # Allow external wrappers (e.g. spaces.GPU for ZeroGPU Spaces)
     _gen = generate_fn if generate_fn is not None else _gen_core
@@ -231,32 +231,32 @@ def build_demo(
     """
 
     # Reusable: language dropdown component
-    def _lang_dropdown(label="Language (optional) / 语种 (可选)", value="Auto"):
+    def _lang_dropdown(label="Ngôn ngữ (không bắt buộc)", value="Tự động"):
         return gr.Dropdown(
             label=label,
             choices=_ALL_LANGUAGES,
             value=value,
             allow_custom_value=False,
             interactive=True,
-            info="Keep as Auto to auto-detect the language.",
+            info="Giữ 'Tự động' để mô hình tự phát hiện ngôn ngữ.",
         )
 
     # Reusable: optional generation settings accordion
     def _gen_settings():
-        with gr.Accordion("Generation Settings (optional)", open=False):
+        with gr.Accordion("Cài đặt nâng cao (không bắt buộc)", open=False):
             sp = gr.Slider(
                 0.5,
                 1.5,
                 value=1.0,
                 step=0.05,
-                label="Speed",
-                info="1.0 = normal. >1 faster, <1 slower. Ignored if Duration is set.",
+                label="Tốc độ",
+                info="1.0 = bình thường. >1 nhanh hơn, <1 chậm hơn. Bị bỏ qua nếu đặt Độ dài.",
             )
             du = gr.Number(
                 value=None,
-                label="Duration (seconds)",
+                label="Độ dài (giây)",
                 info=(
-                    "Leave empty to use speed. Set a fixed duration to override speed."
+                    "Để trống để dùng tốc độ. Đặt giá trị cố định để ghi đè tốc độ."
                 ),
             )
             ns = gr.Slider(
@@ -264,13 +264,13 @@ def build_demo(
                 64,
                 value=32,
                 step=1,
-                label="Inference Steps",
-                info="Default: 32. Lower = faster, higher = better quality.",
+                label="Số bước suy luận",
+                info="Mặc định: 32. Thấp hơn = nhanh hơn, cao hơn = chất lượng tốt hơn.",
             )
             dn = gr.Checkbox(
-                label="Denoise",
+                label="Khử nhiễu",
                 value=True,
-                info="Default: enabled. Uncheck to disable denoising.",
+                info="Mặc định: bật. Bỏ chọn để tắt khử nhiễu.",
             )
             gs = gr.Slider(
                 0.0,
@@ -278,33 +278,33 @@ def build_demo(
                 value=2.0,
                 step=0.1,
                 label="Guidance Scale (CFG)",
-                info="Default: 2.0.",
+                info="Mặc định: 2.0.",
             )
             pp = gr.Checkbox(
-                label="Preprocess Prompt",
+                label="Tiền xử lý audio tham chiếu",
                 value=True,
-                info="apply silence removal and trimming to the reference "
-                "audio, add punctuation in the end of reference text (if not already)",
+                info="Xóa khoảng lặng, cắt gọn audio tham chiếu, "
+                "thêm dấu câu cuối văn bản tham chiếu (nếu chưa có)",
             )
             po = gr.Checkbox(
-                label="Postprocess Output",
+                label="Hậu xử lý kết quả",
                 value=True,
-                info="Remove long silences from generated audio.",
+                info="Xóa khoảng lặng dài khỏi audio kết quả.",
             )
         return ns, gs, dn, sp, du, pp, po
 
     with gr.Blocks(theme=theme, css=css, title="OmniVoice Demo") as demo:
         gr.Markdown(
             """
-# OmniVoice Demo
+# OmniVoice — Chuyển văn bản thành giọng nói
 
-State-of-the-art text-to-speech model for **600+ languages**, supporting:
+Mô hình text‑to‑speech đa ngôn ngữ hỗ trợ **hơn 600 ngôn ngữ**:
 
-- **Voice Clone** — Clone any voice from a reference audio
-- **Voice Design** — Create custom voices with speaker attributes
+- **Sao chép giọng nói** — Sao chép bất kỳ giọng nói nào từ một đoạn audio tham chiếu
+- **Thiết kế giọng nói** — Tạo giọng nói tùy chỉnh theo các thuộc tính người nói
 
-Built with [OmniVoice](https://github.com/k2-fsa/OmniVoice)
-by Xiaomi AI Lab Next-gen Kaldi team.
+Xây dựng bởi [OmniVoice](https://github.com/k2-fsa/OmniVoice)
+— Xiaomi AI Lab, đội ngũ Next‑gen Kaldi.
 """
         )
 
@@ -312,33 +312,33 @@ by Xiaomi AI Lab Next-gen Kaldi team.
             # ==============================================================
             # Voice Clone
             # ==============================================================
-            with gr.TabItem("Voice Clone"):
+            with gr.TabItem("🎙 Sao chép giọng nói"):
                 with gr.Row():
                     with gr.Column(scale=1):
                         vc_text = gr.Textbox(
-                            label="Text to Synthesize / 待合成文本",
+                            label="Văn bản cần đọc",
                             lines=4,
-                            placeholder="Enter the text you want to synthesize...",
+                            placeholder="Nhập nội dung bạn muốn chuyển thành giọng nói...",
                         )
                         vc_ref_audio = gr.Audio(
-                            label="Reference Audio / 参考音频",
+                            label="Audio tham chiếu (giọng mẫu)",
                             type="filepath",
                             elem_classes="compact-audio",
                         )
                         gr.Markdown(
                             "<span style='font-size:0.85em;color:#888;'>"
-                            "Recommended: 3–10 seconds audio. "
+                            "Khuyến nghị: audio dài 3–10 giây. "
                             "</span>"
                         )
                         vc_ref_text = gr.Textbox(
-                            label=("Reference Text (optional) / 参考音频文本（可选）"),
+                            label=("Nội dung audio tham chiếu (không bắt buộc)"),
                             lines=2,
-                            placeholder="Transcript of the reference audio. Leave empty"
-                            " to auto-transcribe via ASR models.",
+                            placeholder="Nội dung lời nói trong audio tham chiếu. "
+                            "Để trống để tự động nhận dạng bằng ASR.",
                         )
-                        vc_lang = _lang_dropdown("Language (optional) / 语种 (可选)")
-                        with gr.Accordion("Instruct (optional)", open=False):
-                            vc_instruct = gr.Textbox(label="Instruct", lines=2)
+                        vc_lang = _lang_dropdown("Ngôn ngữ (không bắt buộc)")
+                        with gr.Accordion("Mô tả thêm (không bắt buộc)", open=False):
+                            vc_instruct = gr.Textbox(label="Mô tả giọng (instruct)", lines=2)
                         (
                             vc_ns,
                             vc_gs,
@@ -348,18 +348,20 @@ by Xiaomi AI Lab Next-gen Kaldi team.
                             vc_pp,
                             vc_po,
                         ) = _gen_settings()
-                        vc_btn = gr.Button("Generate / 生成", variant="primary")
+                        vc_btn = gr.Button("🎵 Tạo giọng nói", variant="primary")
                     with gr.Column(scale=1):
                         vc_audio = gr.Audio(
-                            label="Output Audio / 合成结果",
+                            label="Kết quả",
                             type="numpy",
                         )
-                        vc_status = gr.Textbox(label="Status / 状态", lines=2)
+                        vc_status = gr.Textbox(label="Trạng thái", lines=2)
 
                 def _clone_fn(
                     text, lang, ref_aud, ref_text, instruct, ns, gs, dn, sp, du, pp, po
                 ):
-                    return _gen(
+                    # Disable button immediately while processing
+                    yield None, "Đang xử lý...", gr.update(interactive=False, value="Đang xử lý...")
+                    result = _gen(
                         text,
                         lang,
                         ref_aud,
@@ -374,6 +376,7 @@ by Xiaomi AI Lab Next-gen Kaldi team.
                         mode="clone",
                         ref_text=ref_text or None,
                     )
+                    yield result[0], result[1], gr.update(interactive=True, value="🎵 Tạo giọng nói")
 
                 vc_btn.click(
                     _clone_fn,
@@ -391,23 +394,24 @@ by Xiaomi AI Lab Next-gen Kaldi team.
                         vc_pp,
                         vc_po,
                     ],
-                    outputs=[vc_audio, vc_status],
+                    outputs=[vc_audio, vc_status, vc_btn],
+                    concurrency_limit=1,
                 )
 
             # ==============================================================
             # Voice Design
             # ==============================================================
-            with gr.TabItem("Voice Design"):
+            with gr.TabItem("🎨 Thiết kế giọng nói"):
                 with gr.Row():
                     with gr.Column(scale=1):
                         vd_text = gr.Textbox(
-                            label="Text to Synthesize / 待合成文本",
+                            label="Văn bản cần đọc",
                             lines=4,
-                            placeholder="Enter the text you want to synthesize...",
+                            placeholder="Nhập nội dung bạn muốn chuyển thành giọng nói...",
                         )
-                        vd_lang = _lang_dropdown()
+                        vd_lang = _lang_dropdown("Ngôn ngữ (không bắt buộc)")
 
-                        _AUTO = "Auto"
+                        _AUTO = "Tự động"
                         vd_groups = []
                         for _cat, _choices in _CATEGORIES.items():
                             vd_groups.append(
@@ -428,13 +432,13 @@ by Xiaomi AI Lab Next-gen Kaldi team.
                             vd_pp,
                             vd_po,
                         ) = _gen_settings()
-                        vd_btn = gr.Button("Generate / 生成", variant="primary")
+                        vd_btn = gr.Button("🎵 Tạo giọng nói", variant="primary")
                     with gr.Column(scale=1):
                         vd_audio = gr.Audio(
-                            label="Output Audio / 合成结果",
+                            label="Kết quả",
                             type="numpy",
                         )
-                        vd_status = gr.Textbox(label="Status / 状态", lines=2)
+                        vd_status = gr.Textbox(label="Trạng thái", lines=2)
 
                 def _build_instruct(groups):
                     """Extract instruct text from UI dropdowns.
@@ -442,7 +446,7 @@ by Xiaomi AI Lab Next-gen Kaldi team.
                     Language unification and validation is handled by
                     _resolve_instruct inside _preprocess_all.
                     """
-                    selected = [g for g in groups if g and g != "Auto"]
+                    selected = [g for g in groups if g and g != "Tự động"]
                     if not selected:
                         return None
                     parts = []
@@ -459,7 +463,9 @@ by Xiaomi AI Lab Next-gen Kaldi team.
                     return ", ".join(parts)
 
                 def _design_fn(text, lang, ns, gs, dn, sp, du, pp, po, *groups):
-                    return _gen(
+                    # Disable button immediately while processing
+                    yield None, "Đang xử lý...", gr.update(interactive=False, value="Đang xử lý...")
+                    result = _gen(
                         text,
                         lang,
                         None,
@@ -473,6 +479,7 @@ by Xiaomi AI Lab Next-gen Kaldi team.
                         po,
                         mode="design",
                     )
+                    yield result[0], result[1], gr.update(interactive=True, value="🎵 Tạo giọng nói")
 
                 vd_btn.click(
                     _design_fn,
@@ -488,7 +495,8 @@ by Xiaomi AI Lab Next-gen Kaldi team.
                         vd_po,
                     ]
                     + vd_groups,
-                    outputs=[vd_audio, vd_status],
+                    outputs=[vd_audio, vd_status, vd_btn],
+                    concurrency_limit=1,
                 )
 
     return demo
