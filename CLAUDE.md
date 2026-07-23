@@ -143,13 +143,15 @@ Agent:     → Đọc CLAUDE.md
 
 | | |
 |---|---|
-| **Phase hiện tại** | **BOOTSTRAP — Thiết lập chuyên nghiệp hóa dự án** |
+| **Phase hiện tại** | **BOOTSTRAP hoàn thành → chuẩn bị PHASE 1 (HF Space deploy)** |
 | **Ngày bắt đầu** | 2026-07-23 |
 | **Repo** | `github.com/doanquangkien/OmniVoice` (fork từ `k2-fsa/OmniVoice`) |
 | **Môi trường** | Windows 10 Pro, Python 3.13, PyTorch 2.11, CUDA 12.8 |
-| **GPU** | Quadro T1000 (4GB VRAM) — hạn chế, khuyến nghị dùng Colab T4 cho inference nặng |
+| **GPU local** | Quadro T1000 (4GB VRAM) — đã kill tất cả process, dùng Colab/cloud cho inference |
+| **Kiến trúc đã chốt** | GitHub Pages (frontend) + HF Spaces (GPU backend) — xem `docs/discussions/` |
 | **Demo UI** | Gradio 6 — đã Việt hóa toàn bộ giao diện |
 | **Tài liệu** | `OmniVoice-HuongDanSuDung.md` — hướng dẫn toàn diện tiếng Việt |
+| **Quyết định** | 6 quyết định kiến trúc đã chốt (D-001 đến D-006) — xem `handoff.md` §4 |
 
 ---
 

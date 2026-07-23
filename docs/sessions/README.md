@@ -8,7 +8,7 @@
 
 | # | Ngày | Session Log | Trọng tâm |
 |---|---|---|---|
-| 1 | 2026-07-23 | [SESSION-LOG_2026-07-23_01.md](SESSION-LOG_2026-07-23_01.md) | Bootstrap — Thiết lập chuyên nghiệp hóa dự án |
+| 1 | 2026-07-23 | [SESSION-LOG_2026-07-23_01.md](SESSION-LOG_2026-07-23_01.md) | Bootstrap — Chuyên nghiệp hóa + Kiến trúc + HF Space |
 
 ---
 
