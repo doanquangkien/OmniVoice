@@ -13,8 +13,8 @@ tags: ["#config"]
 ## 0. Commit Pointer
 
 ```
-Branch:      main (chưa có remote)
-HEAD:        <sẽ cập nhật sau commit đầu tiên>
+Branch:      master
+HEAD:        8c21246
 Remote:      github.com/doanquangkien/OmniVoice (fork từ k2-fsa/OmniVoice)
 
 GPU local:   Quadro T1000 (4GB VRAM) — hạn chế, dùng Colab T4 cho inference dài
