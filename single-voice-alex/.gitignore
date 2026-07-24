@@ -1,0 +1,4 @@
+voice_packs/*.mp3
+voice_packs/*.wav
+__pycache__/
+.venv/
