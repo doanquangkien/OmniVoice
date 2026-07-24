@@ -4,9 +4,9 @@ tags: ["#config"]
 
 # Session Handoff — OmniVoice
 
-> **Cập nhật:** 2026-07-23 — Phiên #1: Bootstrap chuyên nghiệp hóa + Thảo luận kiến trúc
+> **Cập nhật:** 2026-07-24 — Phiên #2-3: Kiến trúc, Voice Packs, Colab, Single-Voice Deploy
 > **Model:** Claude
-> **Phase:** BOOTSTRAP → chuẩn bị sang PHASE 1 (HF Space Backend)
+> **Phase:** PHASE 1 — Single-Voice + Colab hoàn chỉnh
 
 ---
 
@@ -14,135 +14,157 @@ tags: ["#config"]
 
 ```
 Branch:      master
-HEAD:        1c9824f
+HEAD:        0ab3a63
 Remote:      github.com/doanquangkien/OmniVoice (fork từ k2-fsa/OmniVoice)
 
-GPU local:   Quadro T1000 (4GB VRAM) — đã kill tất cả process
-Colab:       Đã test thành công với GPU T4, UI Việt hóa chạy ổn định
+GPU local:   Quadro T1000 (4GB VRAM) — QUÁ YẾU, không dùng cho inference
+HF Spaces:   doanquangkien/omnivoice-tts (template 3 giọng, private, running)
+             doanquangkien/omnivoice-single (1 giọng nam công nghệ, private, running)
+Colab:       T4 16GB — hoạt động tốt, ~30s/audio
+Voice Packs: 3 giọng mẫu (nam công nghệ, nam trầm ấm, nữ ấm áp)
+Kaggle:      Không dùng được (cần verify phone)
 ```
 
 ---
 
 ## 1. Đã Làm
 
-### 1.1 Bootstrap — Thiết lập chuyên nghiệp (Phiên #1)
+### 1.1 Agent AGY (Gemini sub-agent)
+- Khám phá + test `agy` CLI — gọi Gemini từ terminal
+- Vision test thành công — phân tích ảnh DeepSeek dashboard
+- Tạo `.agents/05-agy-agent.md` — cẩm nang sử dụng
 
-- Clone repo từ `github.com/doanquangkien/OmniVoice`
-- Viết `OmniVoice-HuongDanSuDung.md` — tài liệu tiếng Việt toàn diện 13 chương
-- Việt hóa toàn bộ UI Gradio demo (`omnivoice/cli/demo.py`)
-- Fix double-click button: `concurrency_limit=1` + tự disable
-- Test inference local (4GB VRAM — chậm, 10-15 phút/audio)
-- Test inference Colab (T4 16GB — nhanh, 30-60 giây/audio)
+### 1.2 Kiến trúc + Domain
+- Nghiên cứu 4 options triển khai → chốt per-user HF Space + OAuth
+- Chốt Next.js + Vercel Hobby ($0)
+- 12 quyết định kiến trúc (D-001 → D-012)
+- Tạo `docs/decisions/0001-voice-domain-platform.md`
+- Tạo `docs/specs/voice-doanquangkien.md`
 
-### 1.2 Hệ thống quản lý dự án chuyên nghiệp
+### 1.3 Frontend Next.js (voice-platform/)
+- Scaffold Next.js 16.2 + TypeScript + Tailwind
+- Code: lib, hooks, API routes, components, pages
+- OAuth flow (PKCE client-side qua @huggingface/hub)
+- Token fallback input
+- Deploy lên Vercel: https://voice-platform-beige.vercel.app
+- **Hiện tại:** Tạm dừng — tập trung vào HF Spaces + Colab
 
-- `CLAUDE.md` — cơ chế tự chủ Agent 5 bước + bản đồ định tuyến
-- `.agents/` — handoff, constitution (7 quy tắc), conventions, stack, workflow, quick-ref
-- `docs/` — VISION, sessions, reports, workmaps, discussions, decisions, KNOWN-ISSUES
-- `CHANGELOG.md`, `KNOWN-ISSUES.md`
+### 1.4 HF Spaces
+- **Template 3 giọng:** `doanquangkien/omnivoice-tts` — public, ZeroGPU T4
+  - 8 lỗi ZeroGPU đã fix (document tại `.agents/06-hf-spaces-guide.md`)
+  - UI redesign: light theme, Be Vietnam Pro, mobile-first
+- **Single voice:** `doanquangkien/omnivoice-single` — private, ZeroGPU T4
+  - 1 giọng nam công nghệ, cache VoiceClonePrompt
+  - `postprocess_output=False` + paragraph pause 100ms
+  - Tối ưu: `position_temperature=3.0`, `language="vi"`, `speed=0.95`
 
-### 1.3 Thảo luận kiến trúc — 3 tài liệu lớn
+### 1.5 Voice Packs
+- 3 giọng mẫu 10s: `voice_packs/giong_nam_cong_nghe.mp3`, `giong_nam_tram_am.mp3`, `giong_nu_am_ap.mp3`
+- Nhúng base64 trong `voice_data.py` (HF chặn binary)
 
-| # | Tài liệu | Nội dung |
-|---|---|---|
-| 1 | `docs/discussions/2026-07-23-architecture-for-vietnam-market.md` | Phân tích 3 hướng triển khai (EXE+CPU, SaaS, Colab Hybrid) → chốt hướng C |
-| 2 | `docs/reports/2026-07-23-arch-vietnam-deployment-review.md` | Architecture review độc lập — PASS WITH CONDITIONS. Đề xuất Modal-first, HF Spaces fallback, ONNX CPU emergency |
-| 3 | `docs/discussions/2026-07-23-hf-oauth-automation.md` | Mô hình HF Space OAuth tự động — user 2 click, 30 giây có GPU riêng. Lộ trình Mức 1 (thủ công) → Mức 2 (OAuth) |
+### 1.6 Single-Voice Projects (Colab 1-click)
+- `single-voice/` — Giọng nam công nghệ
+- `single-voice-alex/` — Giọng Alex (WAV 10s, ref_text có sẵn)
+- `single-voice-thanhnien/` — Giọng Thanh niên tự tin (10s, ref_text 2 câu)
+- Mỗi project: `voice_data.py` + `colab_*.ipynb` (1-click Open in Colab)
+- Auto-download voice_data.py từ GitHub raw URL
 
-### 1.4 Code — HF Space Backend
-
-- `app.py` — Gradio app với API endpoints (gốc repo, sẵn sàng deploy lên HF Spaces)
-- `requirements.txt` — dependencies cho HF Spaces
-- Colab notebook tiếng Việt tại `TEST/Colab_OmniVoice_Vietnam.ipynb`
+### 1.7 Cẩm nang
+- `.agents/05-agy-agent.md` — Cách gọi Gemini làm sub-agent
+- `.agents/06-hf-spaces-guide.md` — 8 lỗi HF Spaces + cách fix
 
 ---
 
 ## 2. Trạng Thái Dự Án
 
 ```
-✅ BOOTSTRAP — HOÀN THÀNH:
-   ✅ Clone + khảo sát + tài liệu tiếng Việt
-   ✅ Demo UI Việt hóa + fix double-click
-   ✅ Hệ thống quản lý dự án chuyên nghiệp
-   ✅ 3 tài liệu kiến trúc + architecture review
-   ✅ HF Space backend code (app.py)
-   ✅ Colab notebook tiếng Việt
+✅ BOOTSTRAP — HOÀN THÀNH
+✅ PHASE 1 — HF Spaces + Colab:
+   ✅ 3 giọng mẫu (voice_packs/)
+   ✅ HF Space template 3 giọng (omnivoice-tts)
+   ✅ HF Space single voice (omnivoice-single)
+   ✅ 3 Colab notebooks 1-click
 
-⬜ PHASE 1 — HF Space Deploy:
-   ⬜ Deploy app.py lên HF Spaces (doanquangkien/omnivoice-tts)
-   ⬜ Tạo 3 giọng mẫu tiếng Việt (VoiceClonePrompt .pt)
-   ⬜ Test API từ browser
+⏸️ TẠM DỪNG — Frontend:
+   ⏸️ voice-platform (Next.js + Vercel)
 
-⬜ PHASE 2 — Web App Frontend:
-   ⬜ React + Vite + Tailwind SPA
-   ⬜ GitHub Pages deploy
-
-⬜ PHASE 3 — Voice Packs + Polish:
-   ⬜ Voice Pack manager
-   ⬜ Mobile responsive
+⬜ PHASE 2 — Hoàn thiện:
+   ⬜ Custom domain voice.doanquangkien.com
+   ⬜ HF Space PRO ($9/tháng) nếu muốn always-on
+   ⬜ Thêm nhiều voice packs
 ```
 
 ---
 
 ## 3. Việc Tiếp Theo
 
-### Ưu tiên CAO (Phase 1)
-1. **Deploy app.py lên HF Spaces** — tạo Space `doanquangkien/omnivoice-tts`
-2. **Tạo 3 giọng mẫu tiếng Việt** — dùng Colab để encode VoiceClonePrompt:
-   - Nam Bắc (giọng nam, Hà Nội)
-   - Nữ Bắc (giọng nữ, Hà Nội)
-   - Trầm ấm (giọng nam trung niên, thuyết minh)
-3. **Test API** — gọi `/api/predict` từ browser, xác nhận hoạt động
-
-### Ưu tiên TRUNG BÌNH (Phase 2)
-4. Build web app React SPA, deploy GitHub Pages
-5. Tích hợp với HF Space API
-6. Lộ trình Mức 1: user tự duplicate Space + paste token
+1. **Test Colab notebooks** — xác nhận cả 3 giọng chạy ổn
+2. **HF Space PRO** — nếu muốn bỏ giới hạn ngủ 15 phút
+3. **Custom domain** — voice.doanquangkien.com trỏ về HF Space hoặc Vercel
+4. **Thêm voice packs** — pattern đã có sẵn, chỉ cần audio mới + tạo folder
 
 ---
 
 ## 4. Quyết Định Đã Chốt
 
-| # | Quyết định | Ghi chú |
-|---|---|---|
-| **D-001** | Kiến trúc: GitHub Pages (frontend) + HF Spaces (GPU backend) | $0 toàn bộ, không vi phạm ToS |
-| **D-002** | Ưu tiên Gradio API (tận dụng code sẵn) cho MVP, FastAPI cho production | app.py đã có sẵn cả 2 chế độ |
-| **D-003** | Voice Packs lưu trên HF Dataset, cache local | `.ovoice` format (zip: pt + wav + metadata.json) |
-| **D-004** | Lộ trình 2 mức: Mức 1 (thủ công, 1-2 tuần) → Mức 2 (OAuth, 3-4 tuần) | Chỉ build Mức 2 khi Mức 1 có >50 user |
-| **D-005** | Website 1 trang duy nhất: chọn giọng → nhập text → tạo → nghe | Không auth, không login, không phức tạp |
-| **D-006** | Chỉ tập trung tiếng Việt 100% | Cắt bỏ đa ngôn ngữ khỏi UI |
+| # | Quyết định |
+|---|-----------|
+| D-001 → D-006 | Kiến trúc ban đầu |
+| D-007 | Domain: voice.doanquangkien.com |
+| D-008 | Per-user HF Space + OAuth 1-click |
+| D-009 | Next.js + Vercel Hobby |
+| D-010 | Browser gọi thẳng HF Space |
+| D-011 | Trừu tượng hóa ở lớp UX |
+| D-012 | Dự án cộng đồng, không thu phí |
+| D-013 | **Single-voice model** — 1 giọng/Space/Colab |
 
 ---
 
-## 5. Lưu Ý Cho Agent Sau
+## 5. Cấu Trúc Dự Án
+
+```
+OmniVoice/
+├── app.py                    ← HF Space template (3 giọng)
+├── voice_packs/              ← 3 audio mẫu 10s
+├── single-voice/             ← Nam công nghệ + Colab
+├── single-voice-alex/        ← Alex + Colab
+├── single-voice-thanhnien/   ← Thanh niên tự tin + Colab
+├── voice-platform/           ← Next.js frontend (tạm dừng)
+├── .agents/                  ← System files + guides
+└── docs/                     ← ADR, specs, sessions
+```
+
+---
+
+## 6. Pattern Tạo Voice Mới
+
+```bash
+# 1. Tạo folder
+mkdir single-voice-TEN && mkdir single-voice-TEN/voice_packs
+
+# 2. Cắt audio 10s
+ffmpeg -i INPUT.mp3 -t 10 -acodec copy single-voice-TEN/voice_packs/TEN_10s.mp3
+
+# 3. Tạo voice_data.py (base64)
+python -c "import base64,json; ..."
+
+# 4. Copy + sửa Colab notebook từ template có sẵn
+
+# 5. Push lên GitHub → Colab badge tự động hoạt động
+```
+
+---
+
+## 7. Lưu Ý Cho Agent Sau
 
 | # | Lưu ý |
 |---|-------|
-| 1 | **Kiến trúc đã chốt:** GitHub Pages + HF Spaces. Đừng đề xuất lại Colab hay Desktop EXE |
-| 2 | **app.py đã có ở gốc repo** — sẵn sàng deploy lên HF Spaces. Cần test thực tế |
-| 3 | **4GB VRAM local là giới hạn cứng** — mọi inference production phải qua cloud GPU |
-| 4 | **UI Việt hóa** tại `omnivoice/cli/demo.py` — không phải app.py. app.py là bản rút gọn cho HF Spaces |
-| 5 | **Audio tham chiếu test** tại `TEST/audio_10s.mp3` |
-| 6 | **3 tài liệu kiến trúc** trong `docs/discussions/` và `docs/reports/` — đọc trước khi đề xuất thay đổi |
-| 7 | **Colab notebook** tại `TEST/Colab_OmniVoice_Vietnam.ipynb` — dùng để encode VoiceClonePrompt |
-| 8 | **Ngrok không nên dùng** — Cloudflare Tunnel hoặc HF Spaces built-in URL |
-| 9 | **Voice Pack format** `.ovoice` = zip(pt + wav + metadata.json) — chưa implement, mới có spec |
-| 10 | **Architecture review** tại `docs/reports/2026-07-23-arch-vietnam-deployment-review.md` — 4 điều kiện MUST FIX trước khi production |
-
----
-
-## 6. Lệnh Nhanh
-
-```bash
-# Demo local (có UI Việt hóa)
-omnivoice-demo --no-asr --port 7860
-
-# HF Space (app.py ở gốc repo)
-python app.py
-
-# Colab
-# Mở https://colab.research.google.com/github/doanquangkien/OmniVoice/blob/master/TEST/Colab_OmniVoice_Vietnam.ipynb
-
-# Git
-git push origin master
-```
+| 1 | **T1000 4GB quá yếu** — mọi inference phải qua HF Space hoặc Colab |
+| 2 | **HF ZeroGPU cần Gradio** — không dùng được FastAPI thuần |
+| 3 | **HF chặn binary** — audio phải nhúng base64 trong .py |
+| 4 | **@spaces.GPU** phải ở module level + wire qua Gradio click |
+| 5 | **Colab 1-click** — voice_data.py auto-download từ GitHub raw |
+| 6 | **NotebookEdit có bug** — ghi đè toàn bộ cell, cần kiểm tra sau edit |
+| 7 | **postprocess_output=False** — giữ khoảng lặng tự nhiên |
+| 8 | **ref_text phải khớp audio** — nếu không VoiceClonePrompt hỏng |
+| 9 | **instruct phải dùng giá trị hợp lệ** — xem danh sách trong OmniVoice source |
